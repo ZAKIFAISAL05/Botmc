@@ -1,17 +1,15 @@
 FROM node:18-slim
 
-# Set folder kerja
 WORKDIR /usr/src/app
 
-# Hanya copy package.json dulu (biar cepat)
+# Bersihkan cache npm agar tidak error 'notarget' lagi
+RUN npm cache clean --force
+
 COPY package.json ./
 
-# Install library (pakai --production agar hemat tempat)
-RUN npm install --production
+# Install library secara murni
+RUN npm install
 
-# Baru copy sisa kodenya
 COPY . .
 
-# Jalankan botnya
 CMD ["node", "bot_bedrock.js"]
-
