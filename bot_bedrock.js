@@ -9,7 +9,7 @@ const CONFIG = {
 };
 
 function createBot() {
-  console.log(`[${new Date().toLocaleTimeString()}] Menghubungkan ke Bedrock Aternos...`);
+  console.log(`[${new Date().toLocaleTimeString()}] Menghubungkan via Docker ke Bedrock...`);
 
   const client = bedrock.createClient({
     host: CONFIG.host,
@@ -19,28 +19,24 @@ function createBot() {
     version: CONFIG.version
   });
 
-  // Saat bot berhasil masuk ke dunia
   client.on('spawn', () => {
-    console.log(`[${new Date().toLocaleTimeString()}] ✅ y.m.b_assiten BERHASIL MASUK!`);
+    console.log('✅ Bot Berhasil Spawn di Server!');
     
-    // Kirim login setelah 10 detik agar server stabil dulu
     setTimeout(() => {
-      console.log('🔐 Menjalankan perintah login/register...');
       const sendChat = (msg) => {
         client.queue('text', {
           type: 'chat', needs_translation: false, source_name: CONFIG.username,
           xuid: '', platform_chat_id: '', message: msg
         });
       };
-
       sendChat('/register 123456 123456');
       setTimeout(() => sendChat('/login 123456'), 2000);
     }, 10000);
   });
 
-  // ANTI-AFK: Gerak dikit tiap 30 detik biar gak dianggap bot diam
+  // Anti-AFK agar tidak ditendang server
   const antiAfk = setInterval(() => {
-    if (client.status === 2) { // Status 2 = di dalam game
+    if (client.status === 2) {
       client.queue('player_auth_input', {
         pitch: 0, yaw: 0, position: { x: 0, y: 0, z: 0 },
         move_vector: { x: 0, z: 0.1 }, head_yaw: 0,
@@ -50,19 +46,14 @@ function createBot() {
     }
   }, 30000);
 
-  // Jika diskonek, tunggu 20 detik lalu masuk lagi
   client.on('disconnect', (packet) => {
-    console.log(`[${new Date().toLocaleTimeString()}] ❌ Terputus: ${packet.message}`);
+    console.log('❌ Terputus:', packet.message);
     clearInterval(antiAfk);
-    console.log('🔄 Reconnecting dalam 20 detik...');
     setTimeout(createBot, 20000);
   });
 
-  client.on('error', (err) => {
-    console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Error: ${err.message}`);
-  });
+  client.on('error', (err) => console.log('⚠️ Error:', err.message));
 }
 
-// Mulai bot
 createBot();
-    
+        
